@@ -1,11 +1,28 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { FileUp, Database, Activity, Clock, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FileUp, Database, Activity, Clock, ArrowRight, Briefcase, Building2, HeartHandshake } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
     const navigate = useNavigate();
     const [isUploading, setIsUploading] = useState(false);
+    const [mode, setMode] = useState('hr');
+    const [focusAreas, setFocusAreas] = useState([]);
+
+    const availableFocusAreas = {
+        hr: ['Linguistic Bullying', 'Silent Employees', 'Leadership Identification', 'Micromanagement', 'Conflict Detection', 'Employee Confidence', 'Bias Detection', 'Work Pressure'],
+        sales: ['Frame Control', 'Objection Handling', 'Closing Aggression'],
+        clinical: ['Partnership Parity', 'Avoidance Markers', 'Aggression Detection']
+    };
+
+    const handleModeChange = (newMode) => {
+        setMode(newMode);
+        setFocusAreas([]);
+    };
+
+    const toggleFocus = (area) => {
+        setFocusAreas(prev => prev.includes(area) ? prev.filter(a => a !== area) : [...prev, area]);
+    };
 
     const handleFileUpload = async (e) => {
         const file = e.target.files[0];
@@ -21,13 +38,12 @@ const Dashboard = () => {
                 const response = await fetch('http://localhost:5000/api/analysis/upload', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(parsedData)
+                    body: JSON.stringify({ ...parsedData, mode, focus_areas: focusAreas })
                 });
 
                 const jsonResponse = await response.json();
 
                 if (response.ok) {
-                    // Pass the NLP extracted results via React Router state
                     navigate(`/analysis/${jsonResponse.data._id}`, { state: { resultData: jsonResponse.data.results, rawMessages: parsedData.messages } });
                 } else {
                     console.error("Backend Error:", jsonResponse);
@@ -44,7 +60,7 @@ const Dashboard = () => {
     };
 
     const recentAnalyses = [
-        { id: 1, title: 'Q3 Board Meeting (Mock History)', date: 'Oct 12, 2026', participants: 4, dominance: 'Sarah J. (62%)' }
+        { id: 1, title: 'Q3 Board Meeting', date: 'Oct 12, 2026', participants: 4, dominance: 'Sarah J. (62%)' }
     ];
 
     return (
@@ -56,7 +72,6 @@ const Dashboard = () => {
                     <Activity className="w-6 h-6 text-indigo-400" />
                     <span className="font-['Outfit'] font-bold text-xl">PDA Workspace</span>
                 </div>
-
                 <nav className="flex-1 space-y-2">
                     <button className="w-full flex items-center justify-start gap-4 px-4 py-3 rounded-xl bg-white/10 text-white font-medium">
                         <Database className="w-5 h-5" /> All Analyses
@@ -65,24 +80,66 @@ const Dashboard = () => {
                         <Clock className="w-5 h-5" /> Recent
                     </button>
                 </nav>
-
-                <div className="pt-6 border-t border-white/5 mt-auto flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500" />
-                    <div className="flex flex-col">
-                        <span className="text-sm font-semibold">Alex Mitchell</span>
-                        <span className="text-xs text-gray-500">Pro Plan</span>
-                    </div>
-                </div>
             </aside>
 
             {/* MAIN CONTENT */}
             <main className="flex-1 p-8 md:p-12 overflow-y-auto">
-                <header className="mb-12 flex justify-between items-end">
-                    <div>
-                        <h1 className="text-4xl font-['Outfit'] font-bold mb-2">Dashboard</h1>
-                        <p className="text-gray-400">Upload a new conversation or review your active workspace.</p>
-                    </div>
+                <header className="mb-12">
+                    <h1 className="text-4xl font-['Outfit'] font-bold mb-2">Workspace</h1>
                 </header>
+
+                {/* INTELLIGENCE MODES */}
+                <div className="mb-8">
+                    <h2 className="text-xl font-['Outfit'] font-bold mb-4 text-gray-300">Select Intelligence Engine Mode</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                            { id: 'hr', icon: Building2, title: 'HR & Org Culture', desc: 'Detect micromanagement, bias, and silent employees.' },
+                            { id: 'sales', icon: Briefcase, title: 'Sales Leadership', desc: 'Analyze frame control and client negotiation balance.' },
+                            { id: 'clinical', icon: HeartHandshake, title: 'Clinical Therapy', desc: 'Map subtle power shifts in couples or group therapy.' }
+                        ].map((m) => (
+                            <div
+                                key={m.id}
+                                onClick={() => handleModeChange(m.id)}
+                                className={`p-5 rounded-3xl cursor-pointer border-2 transition-all ${mode === m.id ? 'bg-indigo-600/10 border-indigo-500 shadow-[0_0_30px_rgba(99,102,241,0.15)]' : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                                    }`}
+                            >
+                                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${mode === m.id ? 'bg-indigo-500 text-white' : 'bg-white/5 text-gray-400'}`}>
+                                    <m.icon className="w-6 h-6" />
+                                </div>
+                                <h3 className="font-bold text-lg mb-1">{m.title}</h3>
+                                <p className="text-sm text-gray-500 leading-relaxed">{m.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* SUB-FOCUS AREAS */}
+                <AnimatePresence>
+                    {availableFocusAreas[mode] && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="mb-10 overflow-hidden"
+                        >
+                            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-4">Target Specific Analysis Reports (Optional)</h2>
+                            <div className="flex flex-wrap gap-3">
+                                {availableFocusAreas[mode].map(area => (
+                                    <button
+                                        key={area}
+                                        onClick={() => toggleFocus(area)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border ${focusAreas.includes(area)
+                                                ? 'bg-indigo-600 border-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)]'
+                                                : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                                            }`}
+                                    >
+                                        {area}
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* UPLOAD ZONE */}
                 <motion.div
@@ -101,11 +158,11 @@ const Dashboard = () => {
                         </div>
 
                         <h3 className="text-2xl font-['Outfit'] font-bold mb-2">
-                            {isUploading ? 'Extracting NLP Features...' : 'Upload Chat Data'}
+                            {isUploading ? 'Extracting NLP Features...' : `Upload Transcript to ${mode.toUpperCase()} Engine`}
                         </h3>
 
                         <p className="text-gray-400 text-center max-w-sm mb-6">
-                            Drop your JSON chat log here to begin processing through the Python Engine. Use the `test_chat.json` file.
+                            Drop your JSON chat log here to begin extracting psychological power dynamics.
                         </p>
 
                         <button
@@ -119,40 +176,7 @@ const Dashboard = () => {
                     </div>
                 </motion.div>
 
-                {/* RECENT ANALYSES */}
-                <div className="mt-16 opacity-50 pointer-events-none">
-                    <h2 className="text-2xl font-['Outfit'] border-b border-white/10 pb-4 mb-6">Recent Analyses</h2>
-                    <div className="grid gap-4">
-                        {recentAnalyses.map((item, i) => (
-                            <div
-                                key={item.id}
-                                className="group flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 rounded-2xl border border-white/5 bg-white/[0.02]"
-                            >
-                                <div className="flex items-center gap-6 mb-4 sm:mb-0">
-                                    <div className="w-12 h-12 rounded-xl bg-gray-800 flex items-center justify-center text-gray-400">
-                                        <Database className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-lg font-semibold mb-1">{item.title}</h4>
-                                        <p className="text-sm text-gray-500">{item.date} • {item.participants} Participants</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between w-full sm:w-auto sm:gap-12">
-                                    <div className="flex flex-col text-left sm:text-right">
-                                        <span className="text-xs text-gray-500 uppercase tracking-wider font-semibold mb-1">Peak Dominance</span>
-                                        <span className="text-indigo-400 font-medium">{item.dominance}</span>
-                                    </div>
-                                    <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-gray-600">
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </main>
-
         </div>
     );
 };
