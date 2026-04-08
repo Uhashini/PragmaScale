@@ -1,0 +1,79 @@
+{
+  "messages": [
+    {
+      "timestamp": "09:00",
+      "sender": "Sarah Jenkins",
+      "text": "Good morning team, we need to finalize the Q3 report today."
+    },
+    {
+      "timestamp": "09:05",
+      "sender": "Michael Ross",
+      "text": "Good morning, I think I might need a bit more time for the financial section."
+    },
+    {
+      "timestamp": "09:07",
+      "sender": "Sarah Jenkins",
+      "text": "No, complete it now. We are already behind schedule."
+    },
+    {
+      "timestamp": "09:10",
+      "sender": "Michael Ross",
+      "text": "Maybe I can send a draft first?"
+    },
+    {
+      "timestamp": "09:12",
+      "sender": "Sarah Jenkins",
+      "text": "Send the final version. Do not delay."
+    },
+    {
+      "timestamp": "09:15",
+      "sender": "Emily Clark",
+      "text": "I have completed the marketing section. Should I upload it now?"
+    },
+    {
+      "timestamp": "09:16",
+      "sender": "Sarah Jenkins",
+      "text": "Yes, upload it immediately."
+    },
+    {
+      "timestamp": "09:20",
+      "sender": "Michael Ross",
+      "text": "I am not entirely sure about the revenue projections."
+    },
+    {
+      "timestamp": "09:22",
+      "sender": "Sarah Jenkins",
+      "text": "Fix it. We need accurate numbers."
+    },
+    {
+      "timestamp": "09:25",
+      "sender": "Emily Clark",
+      "text": "The document is uploaded. Please review."
+    },
+    {
+      "timestamp": "09:30",
+      "sender": "Sarah Jenkins",
+      "text": "Reviewed. Looks good."
+    },
+    {
+      "timestamp": "09:35",
+      "sender": "Michael Ross",
+      "text": "Perhaps we can double-check before sending it to the client?"
+    },
+    {
+      "timestamp": "09:37",
+      "sender": "Sarah Jenkins",
+      "text": "No. Send it now."
+    },
+    {
+      "timestamp": "09:40",
+      "sender": "Michael Ross",
+      "text": "Alright, sending it now."
+    },
+    {
+      "timestamp": "09:42",
+      "sender": "Emily Clark",
+      "text": "Done from my side."
+    }
+  ]
+}

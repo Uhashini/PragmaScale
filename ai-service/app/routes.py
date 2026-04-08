@@ -23,30 +23,59 @@ def analyze_chat(payload: ChatPayload):
     # Run prediction model
     results = predict_dominance(features_per_user)
     
-    # Generate mock timeline based on messages
+    # Generate dynamic timeline for N users
     timeline = []
-    users = list(features_per_user.keys())
+    users_list = [r["name"] for r in results]
+    num_users = len(users_list)
     
-    u1 = users[0] if len(users) > 0 else "UserA"
-    u2 = users[1] if len(users) > 1 else "UserB"
-
     # Start at even power setting
-    current_u1 = 50
+    current_power = {u: 100.0 / num_users for u in users_list} if num_users > 0 else {}
+    
     for i, msg in enumerate(payload.messages):
-        # We perform a random walk visualization algorithm mimicking actual model variance
-        shift = random.randint(-8, 8)
-        current_u1 = max(0, min(100, current_u1 + shift))
-        timeline_entry = {"msgId": i, u1: current_u1}
-        if len(users) > 1:
-            timeline_entry[u2] = 100 - current_u1
+        sender = msg.sender
+        
+        # A simple algorithm to shift power dynamically per message
+        if num_users > 1 and sender in current_power:
+            # The sender exerts some conversational power
+            gain = random.randint(2, 6)
+            current_power[sender] += gain
+            
+            # Distribute the loss evenly across everyone else
+            others = [u for u in users_list if u != sender]
+            loss_per_person = gain / len(others)
+            
+            for o in others:
+                current_power[o] = max(0.0, current_power[o] - loss_per_person)
+                
+            # Re-normalize to exactly 100% to prevent drift
+            total = sum(current_power.values())
+            if total > 0:
+                for u in users_list:
+                    current_power[u] = (current_power[u] / total) * 100
+
+        # Construct timeline payload dynamically
+        timeline_entry = {"msgId": i}
+        for u in users_list:
+            timeline_entry[u] = round(current_power.get(u, 0), 1)
             
         timeline.append(timeline_entry)
+
+    # Extract top empirical directives and hedges from the raw messages for evidence
+    all_texts = [m.text for m in payload.messages]
+    
+    # Very simple heuristics to populate dynamic evidence based on actual file payload
+    directives = [t for t in all_texts if any(w in t.lower() for w in ["do it", "now", "immediately", "delay", "fix it", "submit", "complete"])]
+    hedges = [t for t in all_texts if any(w in t.lower() for w in ["think", "maybe", "perhaps", "kind of", "not entirely sure"])]
+
+    # Dynamic fallback system
+    if not directives: directives = ["(No strong directives detected in this segment)"]
+    if not hedges: hedges = ["(No submissive markers detected in this segment)"]
 
     return {
         "users": results,
         "timeline": timeline,
         "evidence": {
-            "top_directives": ["Submit your sections immediately.", "Let's align on this."],
-            "top_hedges": ["I think I might need", "Maybe we should"]
+            "top_directives": list(set(directives))[:3],
+            "top_hedges": list(set(hedges))[:3]
         }
     }
